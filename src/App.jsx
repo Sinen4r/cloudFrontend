@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import FeedbackForm from './components/FeedbackForm';
+import FeedbackForm from './components/feedbackForm';
 import FeedbackList from './components/FeedbackList';
 import EntityDashboard from './components/EntityDashboard';
 import Header from './components/Header';
