@@ -1,13 +1,13 @@
 # frontend/Dockerfile
-# Build stage
-FROM node:18-alpine AS builder
+# Single stage - simpler
+FROM node:18-alpine
 
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
+COPY package.json package-lock.json ./
 
-# Install ALL dependencies (including dev)
+# Install dependencies
 RUN npm ci
 
 # Copy source code
@@ -16,19 +16,16 @@ COPY . .
 # Build the app
 RUN npm run build
 
-# Production stage
-FROM node:18-alpine
+# Switch to non-root user BEFORE installing serve
+RUN adduser -D -u 1001 appuser && \
+    chown -R appuser:appuser /app
 
-WORKDIR /app
+USER appuser
 
-# Install serve only (smaller image)
+# Install serve as non-root user (avoids permission issues)
 RUN npm install -g serve
 
-# Copy built files from builder stage
-COPY --from=builder /app/dist ./dist
-
-# Expose port 8080
 EXPOSE 8080
 
-# Run serve
-CMD ["npx", "vite", "preview", "--host", "0.0.0.0", "--port", "8080"]
+# Serve the app
+CMD ["serve", "-s", "dist", "-l", "8080"]
