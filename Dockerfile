@@ -1,23 +1,34 @@
 # frontend/Dockerfile
-FROM node:18-alpine
+# Build stage
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-RUN npm ci --only=production
+
+# Install ALL dependencies (including dev)
+RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Build React app
+# Build the app
 RUN npm run build
 
-# Install serve to run static files
+# Production stage
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install serve only (smaller image)
 RUN npm install -g serve
+
+# Copy built files from builder stage
+COPY --from=builder /app/dist ./dist
 
 # Expose port 8080
 EXPOSE 8080
 
-# Run on port 8080 for OpenShift
-CMD ["serve", "-s", "build", "-l", "8080"]
+# Run serve
+CMD ["serve", "-s", "dist", "-l", "8080"]
