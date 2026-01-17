@@ -1,31 +1,31 @@
-# frontend/Dockerfile
-# Single stage - simpler
-FROM node:18-alpine
+# -------- Build stage --------
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json ./
-
-# Install dependencies
+COPY package*.json ./
 RUN npm ci
 
-# Copy source code
 COPY . .
-
-# Build the app
 RUN npm run build
 
-# Switch to non-root user BEFORE installing serve
-RUN adduser -D -u 1001 appuser && \
-    chown -R appuser:appuser /app
 
-USER appuser
+# -------- Runtime stage --------
+FROM nginx:1.25-alpine
 
-# Install serve as non-root user (avoids permission issues)
-RUN npm install -g serve
+# Remove default config
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Copy custom config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy build output
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# OpenShift non-root permissions
+RUN chmod -R g+rwx /usr/share/nginx/html \
+    /var/cache/nginx \
+    /var/run
 
 EXPOSE 8080
-
-# Serve the app
-CMD ["serve", "-s", "dist", "-l", "8080"]
+CMD ["nginx", "-g", "daemon off;"]
