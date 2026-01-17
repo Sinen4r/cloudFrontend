@@ -22,7 +22,7 @@ function App() {
   const fetchEntities = async () => {
     try {
       const [majorsRes, minorsRes, coursesRes, professorsRes] = await Promise.all([
-        fetch(`${process.env.REACT_APP_API_URL || '/api'}/majors`),
+        fetch(`https://frontend-12-test2.apps.na46r.prod.ole.redhat.com/majors`),
         fetch(`${process.env.REACT_APP_API_URL || '/api'}/minors`),
         fetch(`${process.env.REACT_APP_API_URL || '/api'}/courses`),
         fetch(`${process.env.REACT_APP_API_URL || '/api'}/professors`)
