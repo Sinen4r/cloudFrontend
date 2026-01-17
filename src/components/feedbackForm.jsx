@@ -55,7 +55,7 @@ const FeedbackForm = ({ entities }) => {
         date: new Date().toISOString()
       };
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL || '/api'}api/feedback`, {
+      const response = await fetch(`https://frontend-12-test2.apps.na46r.prod.ole.redhat.com/api/feedback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

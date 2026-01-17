@@ -13,7 +13,7 @@ const FeedbackList = () => {
 
   const fetchFeedbacks = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/feedback');
+      const response = await fetch('https://frontend-12-test2.apps.na46r.prod.ole.redhat.com/api/feedback');
       const data = await response.json();
       setFeedbacks(data);
     } catch (error) {

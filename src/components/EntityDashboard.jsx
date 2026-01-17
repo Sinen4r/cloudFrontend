@@ -14,7 +14,7 @@ const EntityDashboard = ({ entities }) => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || '/api'}/feedback/stats`);
+      const response = await fetch(`https://frontend-12-test2.apps.na46r.prod.ole.redhat.com/api/feedback/stats`);
       const data = await response.json();
       setStats(data);
     } catch (error) {

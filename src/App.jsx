@@ -23,9 +23,9 @@ function App() {
     try {
       const [majorsRes, minorsRes, coursesRes, professorsRes] = await Promise.all([
         fetch(`https://frontend-12-test2.apps.na46r.prod.ole.redhat.com/api/majors`),
-        fetch(`${process.env.REACT_APP_API_URL || '/api'}/minors`),
-        fetch(`${process.env.REACT_APP_API_URL || '/api'}/courses`),
-        fetch(`${process.env.REACT_APP_API_URL || '/api'}/professors`)
+        fetch(`https://frontend-12-test2.apps.na46r.prod.ole.redhat.com/api/minors`),
+        fetch(`https://frontend-12-test2.apps.na46r.prod.ole.redhat.com/api/courses`),
+        fetch(`https://frontend-12-test2.apps.na46r.prod.ole.redhat.com/api/professors`)
       ]);
 
       const data = {
