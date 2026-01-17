@@ -1,37 +1,23 @@
-# ---------- Build stage ----------
-FROM node:20-alpine AS build
+# frontend/Dockerfile
+FROM node:18-alpine
 
 WORKDIR /app
 
-# Install dependencies
+# Copy package files
 COPY package*.json ./
-RUN npm install
+RUN npm ci --only=production
 
-# Copy source
+# Copy source code
 COPY . .
 
-# Build frontend
+# Build React app
 RUN npm run build
 
+# Install serve to run static files
+RUN npm install -g serve
 
-# ---------- Runtime stage ----------
-FROM nginx:1.25-alpine
-
-# Remove default nginx config
-RUN rm /etc/nginx/conf.d/default.conf
-
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Copy built frontend
-COPY --from=build /app/dist /usr/share/nginx/html
-
-# OpenShift runs containers as random UID
-RUN chmod -R g+rwx /usr/share/nginx/html \
-    && chmod -R g+rwx /var/cache/nginx \
-    && chmod -R g+rwx /var/run
-
+# Expose port 8080
 EXPOSE 8080
 
-# OpenShift expects port 8080
-CMD ["nginx", "-g", "daemon off;"]
+# Run on port 8080 for OpenShift
+CMD ["serve", "-s", "build", "-l", "8080"]
