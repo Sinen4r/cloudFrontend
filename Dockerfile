@@ -1,12 +1,19 @@
 # frontend/Dockerfile
+# Build stage
 FROM node:18-alpine AS builder
 
 WORKDIR /app
 
+# Copy package files
 COPY package*.json ./
+
+# Install ALL dependencies (including dev)
 RUN npm ci
 
+# Copy source code
 COPY . .
+
+# Build the app
 RUN npm run build
 
 # Production stage
@@ -14,15 +21,14 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy built files
+# Install serve only (smaller image)
+RUN npm install -g serve
+
+# Copy built files from builder stage
 COPY --from=builder /app/dist ./dist
 
-# Copy server.js
-COPY --from=builder /app/server.js ./
-
-# Install only production dependencies
-RUN npm install express
-
+# Expose port 8080
 EXPOSE 8080
 
-CMD ["node", "server.js"]
+# Run serve
+CMD ["npx", "vite", "preview", "--host", "0.0.0.0", "--port", "8080"]
