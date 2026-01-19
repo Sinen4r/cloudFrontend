@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Header.css';
 
-const Header = () => {
+const Header = ({ username, onLogout }) => {
   const [stats, setStats] = useState({
     averageRating: 4.2,
     feedbackCount: 0,
@@ -15,7 +15,7 @@ const Header = () => {
   const fetchStats = async () => {
     try {
       // Fetch feedback data
-      const feedbackResponse = await fetch('http://localhost:5000/api/feedback');
+      const feedbackResponse = await fetch('https://frontend-12-test2.apps.na46r.prod.ole.redhat.com/api/feedback');
       const feedbacks = await feedbackResponse.json();
       
       // Calculate statistics
@@ -56,19 +56,33 @@ const Header = () => {
           <p className="subtitle">Share your experience, shape our university</p>
         </div>
         
-        <div className="stats">
-          <div className="stat-item">
-            <span className="stat-number">
-              {stats.loading ? '...' : stats.averageRating}
-            </span>
-            <span className="stat-label">Avg. Rating</span>
+        <div className="header-right">
+          <div className="stats">
+            <div className="stat-item">
+              <span className="stat-number">
+                {stats.loading ? '...' : stats.averageRating}
+              </span>
+              <span className="stat-label">Avg. Rating</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number">
+                {stats.loading ? '...' : formatNumber(stats.feedbackCount)}
+              </span>
+              <span className="stat-label">Feedbacks</span>
+            </div>
           </div>
-          <div className="stat-item">
-            <span className="stat-number">
-              {stats.loading ? '...' : formatNumber(stats.feedbackCount)}
-            </span>
-            <span className="stat-label">Feedbacks</span>
-          </div>
+
+          {username && (
+            <div className="user-section">
+              <div className="user-info">
+                <span className="user-icon">👤</span>
+                <span className="username">{username}</span>
+              </div>
+              <button onClick={onLogout} className="logout-button">
+                Logout
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>
