@@ -8,7 +8,7 @@ import Header from './components/Header';
 const AUTH_API_URL = 'https://auth-backend-test2.apps.na46r.prod.ole.redhat.com/api';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('login'); // 'login', 'signup', 'app'
+  const [currentPage, setCurrentPage] = useState('login');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
   const [activeTab, setActiveTab] = useState('submit');
@@ -21,15 +21,49 @@ function App() {
   });
 
   useEffect(() => {
-    // Vérifier si l'utilisateur est déjà connecté
+    // Check if user is already logged in with a valid token
     const token = localStorage.getItem('token');
-    const savedUsername = localStorage.getItem('username');
-    if (token) {
-      setIsAuthenticated(true);
-      setUsername(savedUsername);
-      setCurrentPage('app');
+    const savedEmail = localStorage.getItem('email');
+    
+    if (token && savedEmail) {
+      // Verify token is still valid by making a test request
+      verifyToken(token, savedEmail);
     }
   }, []);
+
+  const verifyToken = async (token, email) => {
+    try {
+      // Try to fetch entities to verify token is valid
+      const response = await fetch(`https://frontend-12-test2.apps.na46r.prod.ole.redhat.com/api/majors`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        // Token is valid, restore session
+        setIsAuthenticated(true);
+        setUsername(email);
+        setCurrentPage('app');
+      } else {
+        // Token is invalid, clear storage
+        clearAuth();
+      }
+    } catch (error) {
+      // Network error or invalid token, clear storage
+      console.error('Token verification failed:', error);
+      clearAuth();
+    }
+  };
+
+  const clearAuth = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('email');
+    localStorage.removeItem('role');
+    localStorage.removeItem('userId');
+    setIsAuthenticated(false);
+    setCurrentPage('login');
+  };
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -66,7 +100,7 @@ function App() {
     }
   };
 
-  // Page de Login
+  // Login Page
   const LoginPage = () => {
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [error, setError] = useState('');
@@ -77,87 +111,85 @@ function App() {
       setError('');
       setLoading(true);
 
-     try {
+      try {
+        const response = await fetch(`${AUTH_API_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password
+          })
+        });
 
+        const data = await response.json();
 
-  const response = await fetch(`${AUTH_API_URL}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      email: formData.email,
-      password: formData.password
-    })
-  });
+        if (response.ok) {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('email', data.user.email);
+          localStorage.setItem('role', data.user.role);
+          localStorage.setItem('userId', data.user.id);
+          setUsername(data.user.email);
+          setIsAuthenticated(true);
+          setCurrentPage('app');
+        } else {
+          setError(data.error || 'Login failed');
+        }
+      } catch (err) {
+        setError('Network error. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    const data = await response.json();
+    return (
+      <div style={authStyles.container}>
+        <div style={authStyles.card}>
+          <h2 style={authStyles.title}>University Feedback System</h2>
+          <h3 style={authStyles.subtitle}>Login</h3>
+          <form onSubmit={handleSubmit} style={authStyles.form}>
+            {error && <div style={authStyles.error}>{error}</div>}
+            
+            <div style={authStyles.inputGroup}>
+              <label style={authStyles.label}>Email</label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                required
+                style={authStyles.input}
+                placeholder="Enter your email"
+              />
+            </div>
 
-    if (response.ok) {
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('email', data.user.email);
-      localStorage.setItem('role', data.user.role);
-      localStorage.setItem('userId', data.user.id);
-      setUsername(data.user.email);
-      setIsAuthenticated(true);
-      setCurrentPage('app');
-    } else {
-      setError(data.error || 'Login failed');
-    }
-  } catch (err) {
-    setError('Network error. Please try again.');
-  } finally {
-    setLoading(false);
-  }
-};
+            <div style={authStyles.inputGroup}>
+              <label style={authStyles.label}>Password</label>
+              <input
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                required
+                style={authStyles.input}
+                placeholder="Enter your password"
+              />
+            </div>
 
-return (
-  <div style={authStyles.container}>
-    <div style={authStyles.card}>
-      <h2 style={authStyles.title}>University Feedback System</h2>
-      <h3 style={authStyles.subtitle}>Login</h3>
-      <form onSubmit={handleSubmit} style={authStyles.form}>
-        {error && <div style={authStyles.error}>{error}</div>}
-        
-        <div style={authStyles.inputGroup}>
-          <label style={authStyles.label}>Email</label>
-          <input
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
-            required
-            style={authStyles.input}
-            placeholder="Enter your email"
-          />
+            <button type="submit" disabled={loading} style={authStyles.button}>
+              {loading ? 'Logging in...' : 'Login'}
+            </button>
+
+            <p style={authStyles.link}>
+              Don't have an account?{' '}
+              <span onClick={() => setCurrentPage('signup')} style={authStyles.linkText}>
+                Sign up
+              </span>
+            </p>
+          </form>
         </div>
-
-        <div style={authStyles.inputGroup}>
-          <label style={authStyles.label}>Password</label>
-          <input
-            type="password"
-            value={formData.password}
-            onChange={(e) => setFormData({...formData, password: e.target.value})}
-            required
-            style={authStyles.input}
-            placeholder="Enter your password"
-          />
-        </div>
-
-        <button type="submit" disabled={loading} style={authStyles.button}>
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
-
-        <p style={authStyles.link}>
-          Don't have an account?{' '}
-          <span onClick={() => setCurrentPage('signup')} style={authStyles.linkText}>
-            Sign up
-          </span>
-        </p>
-      </form>
-    </div>
-  </div>
-);
+      </div>
+    );
   };
 
-  // Page de Signup
+  // Signup Page
   const SignupPage = () => {
     const [formData, setFormData] = useState({
       username: '',
@@ -186,30 +218,30 @@ return (
 
       setLoading(true);
 
-    try {
-      const response = await fetch(`${AUTH_API_URL}/auth/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-          role: 'student'  // ou laissez le backend utiliser la valeur par défaut
-        })
-      });
+      try {
+        const response = await fetch(`${AUTH_API_URL}/auth/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+            role: 'student'
+          })
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (response.ok) {
-        setSuccess('Account created! Redirecting to login...');
-        setTimeout(() => setCurrentPage('login'), 2000);
-      } else {
-        setError(data.error || 'Signup failed');
+        if (response.ok) {
+          setSuccess('Account created! Redirecting to login...');
+          setTimeout(() => setCurrentPage('login'), 2000);
+        } else {
+          setError(data.error || 'Signup failed');
+        }
+      } catch (err) {
+        setError('Network error. Please try again.');
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setError('Network error. Please try again.');
-    } finally {
-      setLoading(false);
-    }
     };
 
     return (
@@ -285,13 +317,10 @@ return (
     );
   };
 
-  // Application principale (après authentification)
+  // Main App (after authentication)
   const MainApp = () => {
     const handleLogout = () => {
-      localStorage.removeItem('token');
-      localStorage.removeItem('username');
-      setIsAuthenticated(false);
-      setCurrentPage('login');
+      clearAuth();
     };
 
     return (
@@ -321,7 +350,7 @@ return (
 
         <main className="main-content">
           {activeTab === 'submit' && (
-            <FeedbackForm entities={entities}  username={username} />
+            <FeedbackForm entities={entities} username={username} />
           )}
           {activeTab === 'view' && (
             <FeedbackList />
@@ -338,7 +367,7 @@ return (
     );
   };
 
-  // Afficher la page appropriée
+  // Display appropriate page
   if (currentPage === 'login') return <LoginPage />;
   if (currentPage === 'signup') return <SignupPage />;
   if (currentPage === 'app' && isAuthenticated) return <MainApp />;
@@ -346,7 +375,7 @@ return (
   return <LoginPage />;
 }
 
-// Styles pour les pages d'authentification
+// Styles for authentication pages
 const authStyles = {
   container: {
     display: 'flex',
