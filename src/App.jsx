@@ -78,6 +78,8 @@ function App() {
       setLoading(true);
 
      try {
+
+
   const response = await fetch(`${AUTH_API_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -104,54 +106,55 @@ function App() {
     setError('Network error. Please try again.');
   } finally {
     setLoading(false);
-}    };
+  }
+};
 
-    return (
-      <div style={authStyles.container}>
-        <div style={authStyles.card}>
-          <h2 style={authStyles.title}>University Feedback System</h2>
-          <h3 style={authStyles.subtitle}>Login</h3>
-          <form onSubmit={handleSubmit} style={authStyles.form}>
-            {error && <div style={authStyles.error}>{error}</div>}
-            
-            <div style={authStyles.inputGroup}>
-              <label style={authStyles.label}>Username</label>
-              <input
-                type="text"
-                value={formData.username}
-                onChange={(e) => setFormData({...formData, username: e.target.value})}
-                required
-                style={authStyles.input}
-                placeholder="Enter your username"
-              />
-            </div>
-
-            <div style={authStyles.inputGroup}>
-              <label style={authStyles.label}>Password</label>
-              <input
-                type="password"
-                value={formData.password}
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
-                required
-                style={authStyles.input}
-                placeholder="Enter your password"
-              />
-            </div>
-
-            <button type="submit" disabled={loading} style={authStyles.button}>
-              {loading ? 'Logging in...' : 'Login'}
-            </button>
-
-            <p style={authStyles.link}>
-              Don't have an account?{' '}
-              <span onClick={() => setCurrentPage('signup')} style={authStyles.linkText}>
-                Sign up
-              </span>
-            </p>
-          </form>
+return (
+  <div style={authStyles.container}>
+    <div style={authStyles.card}>
+      <h2 style={authStyles.title}>University Feedback System</h2>
+      <h3 style={authStyles.subtitle}>Login</h3>
+      <form onSubmit={handleSubmit} style={authStyles.form}>
+        {error && <div style={authStyles.error}>{error}</div>}
+        
+        <div style={authStyles.inputGroup}>
+          <label style={authStyles.label}>Email</label>
+          <input
+            type="email"
+            value={formData.email}
+            onChange={(e) => setFormData({...formData, email: e.target.value})}
+            required
+            style={authStyles.input}
+            placeholder="Enter your email"
+          />
         </div>
-      </div>
-    );
+
+        <div style={authStyles.inputGroup}>
+          <label style={authStyles.label}>Password</label>
+          <input
+            type="password"
+            value={formData.password}
+            onChange={(e) => setFormData({...formData, password: e.target.value})}
+            required
+            style={authStyles.input}
+            placeholder="Enter your password"
+          />
+        </div>
+
+        <button type="submit" disabled={loading} style={authStyles.button}>
+          {loading ? 'Logging in...' : 'Login'}
+        </button>
+
+        <p style={authStyles.link}>
+          Don't have an account?{' '}
+          <span onClick={() => setCurrentPage('signup')} style={authStyles.linkText}>
+            Sign up
+          </span>
+        </p>
+      </form>
+    </div>
+  </div>
+);
   };
 
   // Page de Signup
