@@ -68,7 +68,7 @@ function App() {
 
   // Page de Login
   const LoginPage = () => {
-    const [formData, setFormData] = useState({ username: '', password: '' });
+    const [formData, setFormData] = useState({ email: '', password: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
