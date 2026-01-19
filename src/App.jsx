@@ -77,30 +77,34 @@ function App() {
       setError('');
       setLoading(true);
 
-      try {
-        const response = await fetch(`${AUTH_API_URL}/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        });
+     try {
+  const response = await fetch(`${AUTH_API_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: formData.email,
+      password: formData.password
+    })
+  });
 
-        const data = await response.json();
+    const data = await response.json();
 
-        if (response.ok) {
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('username', formData.username);
-          setUsername(formData.username);
-          setIsAuthenticated(true);
-          setCurrentPage('app');
-        } else {
-          setError(data.error || 'Login failed');
-        }
-      } catch (err) {
-        setError('Network error. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (response.ok) {
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('email', data.user.email);
+      localStorage.setItem('role', data.user.role);
+      localStorage.setItem('userId', data.user.id);
+      setUsername(data.user.email);
+      setIsAuthenticated(true);
+      setCurrentPage('app');
+    } else {
+      setError(data.error || 'Login failed');
+    }
+  } catch (err) {
+    setError('Network error. Please try again.');
+  } finally {
+    setLoading(false);
+}    };
 
     return (
       <div style={authStyles.container}>
@@ -179,30 +183,30 @@ function App() {
 
       setLoading(true);
 
-      try {
-        const response = await fetch(`${AUTH_API_URL}/signup`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            username: formData.username,
-            email: formData.email,
-            password: formData.password
-          })
-        });
+    try {
+      const response = await fetch(`${AUTH_API_URL}/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          role: 'student'  // ou laissez le backend utiliser la valeur par défaut
+        })
+      });
 
-        const data = await response.json();
+      const data = await response.json();
 
-        if (response.ok) {
-          setSuccess('Account created! Redirecting to login...');
-          setTimeout(() => setCurrentPage('login'), 2000);
-        } else {
-          setError(data.error || 'Signup failed');
-        }
-      } catch (err) {
-        setError('Network error. Please try again.');
-      } finally {
-        setLoading(false);
+      if (response.ok) {
+        setSuccess('Account created! Redirecting to login...');
+        setTimeout(() => setCurrentPage('login'), 2000);
+      } else {
+        setError(data.error || 'Signup failed');
       }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
     };
 
     return (
