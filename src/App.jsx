@@ -321,7 +321,7 @@ return (
 
         <main className="main-content">
           {activeTab === 'submit' && (
-            <FeedbackForm entities={entities} />
+            <FeedbackForm entities={entities}  username={username} />
           )}
           {activeTab === 'view' && (
             <FeedbackList />

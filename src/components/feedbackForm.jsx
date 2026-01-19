@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import './FeedbackForm.css';
 
-const FeedbackForm = ({ entities }) => {
+const FeedbackForm = ({ entities, username }) => {
   const [formData, setFormData] = useState({
     target_type: 'course',
     target_id: '',
     rating: 5,
     comment: '',
-    tags: []
+    tags: [],
+     username: username
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,43 +47,57 @@ const FeedbackForm = ({ entities }) => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    try {
-      const feedbackData = {
-        ...formData,
-        date: new Date().toISOString()
-      };
+  e.preventDefault();
+  setIsSubmitting(true);
+  
+  try {
+    const feedbackData = {
+      ...formData,
+      username: username,   // make sure username is included
+      date: new Date().toISOString()
+    };
 
-      const response = await fetch(`https://frontend-12-test2.apps.na46r.prod.ole.redhat.com/api/feedback`, {
+    // Submit feedback to your backend
+    const response = await fetch(`https://frontend-12-test2.apps.na46r.prod.ole.redhat.com/api/feedback`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(feedbackData),
+    });
+
+    if (response.ok) {
+      // Send notification to Notification Service
+      await fetch('https://notif-back-test2.apps.na46r.prod.ole.redhat.com/notify/email', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(feedbackData),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: username,
+          subject: 'Feedback Received',
+          message: `Hi ${username}, your feedback for ${formData.target_type} has been submitted.`
+        })
       });
 
-      if (response.ok) {
-        setSuccessMessage('Thank you! Your feedback has been submitted successfully.');
-        setFormData({
-          target_type: 'course',
-          target_id: '',
-          rating: 5,
-          comment: '',
-          tags: []
-        });
-        
-        setTimeout(() => setSuccessMessage(''), 3000);
-      } else {
-        throw new Error('Failed to submit feedback');
-      }
-    } catch (error) {
-      alert('Error submitting feedback. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+      setSuccessMessage('Thank you! Your feedback has been submitted successfully.');
+      setFormData({
+        target_type: 'course',
+        target_id: '',
+        rating: 5,
+        comment: '',
+        tags: [],
+        username: username
+      });
+
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } else {
+      throw new Error('Failed to submit feedback');
     }
-  };
+  } catch (error) {
+    alert('Error submitting feedback. Please try again.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <div className="feedback-form-container">
